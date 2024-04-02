@@ -1,0 +1,39 @@
+pipeline {
+    agent any
+      stages {
+          stage('build') {
+              steps {
+                  echo 'building the software'
+                  sh 'npm i --legacy-peer-deps'
+                  sh 'npm fund'
+                  sh 'npm install typescript --legacy-peer-deps'
+                  sh 'npm i react-maskinput@3.2.0 --legacy-peer-deps'
+                  sh 'CI= npm run build'
+                 
+              }
+          }
+        
+
+          stage('deploy') {
+              steps {
+                  sh '''#!/bin/bash
+                  echo 'Deploying the software'
+ sudo scp -r /home/jenkins/jenkins/workspace/rehab-pms-dev/build/* xeven-frontend-apps@137.184.242.27:/var/www/rehabdev.xeventechnologies.com  
+
+				 
+                  
+                  '''
+      
+             
+          }
+      }
+    }
+     post {
+             success {
+                 emailext body: 'Changes successfully deployed', subject: '$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!', to: 'jawadiqbal962@gmail.com'
+             }
+             failure{
+              emailext attachLog: true, body: 'Your Build failed to Deploy check log Document ', subject: '$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!', to: 'jawadiqbal962@gmail.com'
+          }
+        }
+}
